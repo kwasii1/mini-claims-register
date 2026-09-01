@@ -16,6 +16,12 @@
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+
+                <flux:sidebar.group :heading="__('Claims')" class="grid">
+                    <flux:sidebar.item icon="document-text" :href="route('claims.register')" :current="request()->routeIs('claims.register')" wire:navigate>
+                        {{ __('Register claim') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
