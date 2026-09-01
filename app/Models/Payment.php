@@ -42,6 +42,9 @@ class Payment extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Claim, $this>
+     */
     public function claim(): BelongsTo
     {
         return $this->belongsTo(Claim::class);
@@ -53,10 +56,13 @@ class Payment extends Model
      */
     public function getConvertedAmountAttribute(): string
     {
-        if ($this->currency === $this->claim->reserve_currency) {
-            return $this->amount;
+        /** @var Claim $claim */
+        $claim = $this->claim;
+
+        if ($this->currency === $claim->reserve_currency) {
+            return (string) $this->amount;
         }
 
-        return (string) bcmul($this->amount, $this->fx_rate_snapshot, 0);
+        return (string) (int) round((float) $this->amount * (float) $this->fx_rate_snapshot);
     }
 }

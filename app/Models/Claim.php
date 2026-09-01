@@ -22,6 +22,9 @@ use Illuminate\Support\Carbon;
  * @property int|null $approved_amount
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read string $total_paid
+ * @property-read string|null $outstanding_balance
+ * @property-read string $status
  */
 #[Fillable([
     'policy_number',
@@ -48,6 +51,9 @@ class Claim extends Model
         ];
     }
 
+    /**
+     * @return HasMany<Payment, $this>
+     */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
@@ -58,9 +64,11 @@ class Claim extends Model
      */
     public function getTotalPaidAttribute(): string
     {
-        return (string) $this->payments->reduce(function (int $carry, Payment $payment) {
-            return $carry + $payment->converted_amount;
+        $total = $this->payments->reduce(function (int $carry, Payment $payment): int {
+            return $carry + (int) $payment->converted_amount;
         }, 0);
+
+        return (string) $total;
     }
 
     /**
@@ -73,9 +81,9 @@ class Claim extends Model
             return null;
         }
 
-        return (string) (bccomp($this->approved_amount, $this->total_paid) <= 0
-            ? 0
-            : bcsub($this->approved_amount, $this->total_paid));
+        $balance = (int) $this->approved_amount - (int) $this->total_paid;
+
+        return (string) max(0, $balance);
     }
 
     /**
@@ -87,7 +95,7 @@ class Claim extends Model
             return 'Reserved, not yet settled';
         }
 
-        if (bccomp($this->approved_amount, $this->total_paid) <= 0) {
+        if ((int) $this->approved_amount <= (int) $this->total_paid) {
             return 'Settled and paid';
         }
 
