@@ -15,8 +15,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Claims Reviewer',
+            'email' => 'reviewer@example.com',
+            'password' => bcrypt('password'),
         ]);
 
         // Reserved claim — no approved amount, no payments
