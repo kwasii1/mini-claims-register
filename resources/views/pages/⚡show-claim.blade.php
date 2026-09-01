@@ -5,7 +5,6 @@ use App\Models\Payment;
 use App\Services\ExchangeRateService;
 use App\Services\ExchangeRateUnavailableException;
 use Flux\Flux;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -13,6 +12,8 @@ use Livewire\Component;
 new #[Title('Claim detail')] class extends Component {
     #[Locked]
     public string $claimId;
+
+    public ?Claim $claimModel = null;
 
     public ?string $new_payment_date = null;
     public ?string $new_payment_amount = null;
@@ -23,21 +24,20 @@ new #[Title('Claim detail')] class extends Component {
     public function mount(string $claim): void
     {
         $this->claimId = $claim;
+        $this->loadClaim();
     }
 
-    #[Computed]
-    public function claim(): Claim
+    public function loadClaim(): void
     {
-        return Claim::with('payments')->findOrFail($this->claimId);
+        $this->claimModel = Claim::with('payments')->findOrFail($this->claimId);
     }
 
-    #[Computed]
-    public function statusVariant(): string
+    public function statusColor(string $status): string
     {
-        return match ($this->claim->status) {
-            'Settled and paid' => 'success',
-            'Settled, payment outstanding' => 'warning',
-            default => 'subtle',
+        return match ($status) {
+            'Settled and paid' => 'green',
+            'Settled, payment outstanding' => 'amber',
+            default => 'zinc',
         };
     }
 
@@ -68,7 +68,7 @@ new #[Title('Claim detail')] class extends Component {
         try {
             $rate = $fx->getRate(
                 $validated['new_payment_currency'],
-                $this->claim->reserve_currency
+                $this->claimModel->reserve_currency
             );
         } catch (ExchangeRateUnavailableException $e) {
             $this->addError('new_payment_currency', __('Exchange rate is currently unavailable. Please try again later.'));
@@ -89,6 +89,8 @@ new #[Title('Claim detail')] class extends Component {
         $this->reset(['new_payment_date', 'new_payment_amount', 'new_payment_currency']);
         $this->new_payment_currency = 'USD';
 
+        $this->loadClaim();
+
         Flux::toast(variant: 'success', text: __('Payment recorded successfully.'));
     }
 }; ?>
@@ -103,44 +105,44 @@ new #[Title('Claim detail')] class extends Component {
         <div class="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2">
             <div>
                 <flux:text variant="subtle">{{ __('Policy number') }}</flux:text>
-                <p class="mt-1 font-medium">{{ $this->claim->policy_number }}</p>
+                <p class="mt-1 font-medium">{{ $this->claimModel->policy_number }}</p>
             </div>
 
             <div>
                 <flux:text variant="subtle">{{ __('Insured name') }}</flux:text>
-                <p class="mt-1 font-medium">{{ $this->claim->insured_name }}</p>
+                <p class="mt-1 font-medium">{{ $this->claimModel->insured_name }}</p>
             </div>
 
             <div>
                 <flux:text variant="subtle">{{ __('Loss date') }}</flux:text>
-                <p class="mt-1 font-medium">{{ $this->claim->loss_date->format('d M Y') }}</p>
+                <p class="mt-1 font-medium">{{ $this->claimModel->loss_date->format('d M Y') }}</p>
             </div>
 
             <div>
                 <flux:text variant="subtle">{{ __('Date notified') }}</flux:text>
-                <p class="mt-1 font-medium">{{ $this->claim->date_notified->format('d M Y') }}</p>
+                <p class="mt-1 font-medium">{{ $this->claimModel->date_notified->format('d M Y') }}</p>
             </div>
 
             <div>
                 <flux:text variant="subtle">{{ __('Nature of loss') }}</flux:text>
-                <p class="mt-1 font-medium">{{ $this->claim->loss_nature }}</p>
+                <p class="mt-1 font-medium">{{ $this->claimModel->loss_nature }}</p>
             </div>
 
             <div>
                 <flux:text variant="subtle">{{ __('Reserve currency') }}</flux:text>
-                <p class="mt-1 font-medium">{{ $this->claim->reserve_currency }}</p>
+                <p class="mt-1 font-medium">{{ $this->claimModel->reserve_currency }}</p>
             </div>
 
             <div>
                 <flux:text variant="subtle">{{ __('Estimated loss') }}</flux:text>
-                <p class="mt-1 font-medium">{{ number_format($this->claim->estimated_loss_amount / 100, 2) }} {{ $this->claim->reserve_currency }}</p>
+                <p class="mt-1 font-medium">{{ number_format($this->claimModel->estimated_loss_amount / 100, 2) }} {{ $this->claimModel->reserve_currency }}</p>
             </div>
 
             <div>
                 <flux:text variant="subtle">{{ __('Approved amount') }}</flux:text>
                 <p class="mt-1 font-medium">
-                    @if ($this->claim->approved_amount !== null)
-                        {{ number_format($this->claim->approved_amount / 100, 2) }} {{ $this->claim->reserve_currency }}
+                    @if ($this->claimModel->approved_amount !== null)
+                        {{ number_format($this->claimModel->approved_amount / 100, 2) }} {{ $this->claimModel->reserve_currency }}
                     @else
                         <span class="text-zinc-400">{{ __('Not yet set') }}</span>
                     @endif
@@ -149,14 +151,14 @@ new #[Title('Claim detail')] class extends Component {
 
             <div>
                 <flux:text variant="subtle">{{ __('Total paid') }}</flux:text>
-                <p class="mt-1 font-medium">{{ number_format($this->claim->total_paid / 100, 2) }} {{ $this->claim->reserve_currency }}</p>
+                <p class="mt-1 font-medium">{{ number_format($this->claimModel->total_paid / 100, 2) }} {{ $this->claimModel->reserve_currency }}</p>
             </div>
 
             <div>
                 <flux:text variant="subtle">{{ __('Outstanding balance') }}</flux:text>
                 <p class="mt-1 font-medium">
-                    @if ($this->claim->outstanding_balance !== null)
-                        {{ number_format($this->claim->outstanding_balance / 100, 2) }} {{ $this->claim->reserve_currency }}
+                    @if ($this->claimModel->outstanding_balance !== null)
+                        {{ number_format($this->claimModel->outstanding_balance / 100, 2) }} {{ $this->claimModel->reserve_currency }}
                     @else
                         <span class="text-zinc-400">{{ __('N/A') }}</span>
                     @endif
@@ -165,11 +167,11 @@ new #[Title('Claim detail')] class extends Component {
 
             <div>
                 <flux:text variant="subtle">{{ __('Status') }}</flux:text>
-                        <p class="mt-1">
-                            <flux:badge :variant="$this->statusVariant">
-                                {{ $this->claim->status }}
-                            </flux:badge>
-                        </p>
+                <p class="mt-1">
+                    <flux:badge :color="$this->statusColor($this->claimModel->status)">
+                        {{ $this->claimModel->status }}
+                    </flux:badge>
+                </p>
             </div>
         </div>
     </div>
@@ -177,7 +179,7 @@ new #[Title('Claim detail')] class extends Component {
     <div class="mt-8">
         <flux:heading level="2">{{ __('Payments') }}</flux:heading>
 
-        @if ($this->claim->payments->isEmpty())
+        @if ($this->claimModel->payments->isEmpty())
             <div class="mt-4 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-8 text-center">
                 <div class="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-800">
                     <flux:icon.banknotes class="size-7 text-zinc-400 dark:text-zinc-500" />
@@ -186,23 +188,23 @@ new #[Title('Claim detail')] class extends Component {
                 <flux:text class="mt-1">{{ __('Payments made against this claim will appear here.') }}</flux:text>
             </div>
         @else
-            <div class="mt-4 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
+            <div class="mt-4 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-700">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/50">
                             <th class="px-4 py-3 text-left font-medium">{{ __('Date') }}</th>
                             <th class="px-4 py-3 text-right font-medium">{{ __('Amount') }}</th>
-                            <th class="px-4 py-3 text-center font-medium">{{ __('Currency') }}</th>
+                            <th class="hidden px-4 py-3 text-center font-medium sm:table-cell">{{ __('Currency') }}</th>
                             <th class="px-4 py-3 text-right font-medium">{{ __('Converted') }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($this->claim->payments as $payment)
+                        @foreach ($this->claimModel->payments as $payment)
                             <tr class="{{ !$loop->last ? 'border-b border-zinc-200 dark:border-zinc-700' : '' }}">
                                 <td class="px-4 py-3">{{ $payment->payment_date->format('d M Y') }}</td>
                                 <td class="px-4 py-3 text-right font-mono">{{ number_format($payment->amount / 100, 2) }}</td>
-                                <td class="px-4 py-3 text-center">{{ $payment->currency }}</td>
-                                <td class="px-4 py-3 text-right font-mono">{{ number_format($payment->converted_amount / 100, 2) }} {{ $this->claim->reserve_currency }}</td>
+                                <td class="hidden px-4 py-3 text-center sm:table-cell">{{ $payment->currency }}</td>
+                                <td class="px-4 py-3 text-right font-mono">{{ number_format($payment->converted_amount / 100, 2) }} {{ $this->claimModel->reserve_currency }}</td>
                             </tr>
                         @endforeach
                     </tbody>

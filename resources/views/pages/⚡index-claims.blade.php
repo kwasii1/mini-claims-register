@@ -154,12 +154,12 @@ new #[Title('All claims')] class extends Component {
             ->values();
     }
 
-    public function statusVariant(string $status): string
+    public function statusColor(string $status): string
     {
         return match ($status) {
-            'Settled and paid' => 'success',
-            'Settled, payment outstanding' => 'warning',
-            default => 'subtle',
+            'Settled and paid' => 'green',
+            'Settled, payment outstanding' => 'amber',
+            default => 'zinc',
         };
     }
 }; ?>
@@ -214,12 +214,12 @@ new #[Title('All claims')] class extends Component {
             />
         </div>
 
-        <div class="mt-4 flex items-center gap-4">
+        <div class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <flux:button variant="subtle" wire:click="resetFilters" data-test="reset-filters-button">
                 {{ __('Reset filters') }}
             </flux:button>
 
-            <div class="ml-auto flex items-center gap-2">
+            <div class="flex items-center gap-2">
                 <flux:text variant="subtle">{{ __('Per page') }}</flux:text>
                 <flux:select wire:model.live="perPage" class="w-20">
                     <flux:select.option value="10">10</flux:select.option>
@@ -241,17 +241,17 @@ new #[Title('All claims')] class extends Component {
                 <flux:text class="mt-1">{{ __('Try adjusting your filters or register a new claim.') }}</flux:text>
             </div>
         @else
-            <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
+            <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-700">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/50">
                             <th class="px-4 py-3 text-left font-medium">{{ __('Policy #') }}</th>
-                            <th class="px-4 py-3 text-left font-medium">{{ __('Insured') }}</th>
-                            <th class="px-4 py-3 text-center font-medium">{{ __('Status') }}</th>
-                            <th class="px-4 py-3 text-right font-medium">{{ __('Approved') }}</th>
-                            <th class="px-4 py-3 text-right font-medium">{{ __('Paid') }}</th>
-                            <th class="px-4 py-3 text-right font-medium">{{ __('Balance') }}</th>
-                            <th class="px-4 py-3 text-center font-medium">{{ __('Currency') }}</th>
+                            <th class="hidden px-4 py-3 text-left font-medium sm:table-cell">{{ __('Insured') }}</th>
+                            <th class="px-4 py-3 text-left font-medium">{{ __('Status') }}</th>
+                            <th class="hidden px-4 py-3 text-right font-medium md:table-cell">{{ __('Approved') }}</th>
+                            <th class="hidden px-4 py-3 text-right font-medium md:table-cell">{{ __('Paid') }}</th>
+                            <th class="hidden px-4 py-3 text-right font-medium md:table-cell">{{ __('Balance') }}</th>
+                            <th class="hidden px-4 py-3 text-center font-medium sm:table-cell">{{ __('Currency') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -261,31 +261,32 @@ new #[Title('All claims')] class extends Component {
                                     <a href="{{ route('claims.show', $claim) }}" class="font-medium text-blue-600 hover:underline dark:text-blue-400" data-test="claim-link">
                                         {{ $claim->policy_number }}
                                     </a>
+                                    <span class="mt-0.5 block text-xs text-zinc-500 sm:hidden">{{ $claim->insured_name }}</span>
                                 </td>
-                                <td class="px-4 py-3">{{ $claim->insured_name }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <flux:badge :variant="$this->statusVariant($claim->status)">
+                                <td class="hidden px-4 py-3 sm:table-cell">{{ $claim->insured_name }}</td>
+                                <td class="px-4 py-3">
+                                    <flux:badge :color="$this->statusColor($claim->status)">
                                         {{ $claim->status }}
                                     </flux:badge>
                                 </td>
-                                <td class="px-4 py-3 text-right font-mono">
+                                <td class="hidden px-4 py-3 text-right font-mono md:table-cell">
                                     @if ($claim->approved_amount !== null)
                                         {{ number_format($claim->approved_amount / 100, 2) }}
                                     @else
                                         <span class="text-zinc-400">&mdash;</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-right font-mono">
+                                <td class="hidden px-4 py-3 text-right font-mono md:table-cell">
                                     {{ number_format($claim->total_paid / 100, 2) }}
                                 </td>
-                                <td class="px-4 py-3 text-right font-mono">
+                                <td class="hidden px-4 py-3 text-right font-mono md:table-cell">
                                     @if ($claim->outstanding_balance !== null)
                                         {{ number_format($claim->outstanding_balance / 100, 2) }}
                                     @else
                                         <span class="text-zinc-400">&mdash;</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-center">{{ $claim->reserve_currency }}</td>
+                                <td class="hidden px-4 py-3 text-center sm:table-cell">{{ $claim->reserve_currency }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -297,10 +298,10 @@ new #[Title('All claims')] class extends Component {
                                     <td colspan="3" class="px-4 py-3 text-right">
                                         {{ $total['count'] }} {{ __('claim') }}{{ $total['count'] !== 1 ? 's' : '' }} ({{ $total['currency'] }})
                                     </td>
-                                    <td class="px-4 py-3 text-right font-mono">
+                                    <td class="hidden px-4 py-3 text-right font-mono md:table-cell">
                                         {{ number_format($total['approved'] / 100, 2) }}
                                     </td>
-                                    <td class="px-4 py-3 text-right font-mono">
+                                    <td class="hidden px-4 py-3 text-right font-mono md:table-cell">
                                         {{ number_format($total['paid'] / 100, 2) }}
                                     </td>
                                     <td colspan="2"></td>

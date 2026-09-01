@@ -64,22 +64,24 @@ new #[Title('Register claim')] class extends Component {
     <flux:text class="mt-1">{{ __('Record a new insurance claim') }}</flux:text>
 
     <form wire:submit="createClaim" class="mt-6 space-y-6">
-        <flux:input
-            wire:model="policy_number"
-            :label="__('Policy number')"
-            type="text"
-            required
-            autofocus
-            autocomplete="off"
-        />
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <flux:input
+                wire:model="policy_number"
+                :label="__('Policy number')"
+                type="text"
+                required
+                autofocus
+                autocomplete="off"
+            />
 
-        <flux:input
-            wire:model="insured_name"
-            :label="__('Insured name')"
-            type="text"
-            required
-            autocomplete="off"
-        />
+            <flux:input
+                wire:model="insured_name"
+                :label="__('Insured name')"
+                type="text"
+                required
+                autocomplete="off"
+            />
+        </div>
 
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <flux:input
@@ -97,21 +99,23 @@ new #[Title('Register claim')] class extends Component {
             />
         </div>
 
-        <flux:input
-            wire:model="loss_nature"
-            :label="__('Nature of loss')"
-            type="text"
-            required
-            autocomplete="off"
-        />
-
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <flux:input
+                wire:model="loss_nature"
+                :label="__('Nature of loss')"
+                type="text"
+                required
+                autocomplete="off"
+            />
+
             <flux:select wire:model="reserve_currency" :label="__('Reserve currency')" required>
                 @foreach ($currencies as $currency)
                     <flux:select.option :value="$currency">{{ $currency }}</flux:select.option>
                 @endforeach
             </flux:select>
+        </div>
 
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <flux:input
                 wire:model="estimated_loss_amount"
                 :label="__('Estimated loss amount')"
@@ -121,6 +125,8 @@ new #[Title('Register claim')] class extends Component {
                 required
                 placeholder="0.00"
             />
+
+            <div></div>
         </div>
 
         <div class="flex items-center gap-4">
