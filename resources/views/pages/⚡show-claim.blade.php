@@ -3,6 +3,7 @@
 use App\Models\Claim;
 use App\Models\Payment;
 use App\Services\ExchangeRateService;
+use App\Services\ExchangeRateUnavailableException;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -69,6 +70,9 @@ new #[Title('Claim detail')] class extends Component {
                 $validated['new_payment_currency'],
                 $this->claim->reserve_currency
             );
+        } catch (ExchangeRateUnavailableException $e) {
+            $this->addError('new_payment_currency', __('Exchange rate is currently unavailable. Please try again later.'));
+            return;
         } catch (\Exception $e) {
             $this->addError('new_payment_currency', __('Unable to fetch exchange rate. Please try again.'));
             return;

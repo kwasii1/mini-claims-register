@@ -112,3 +112,31 @@ test('status derivation - reserved not yet settled', function () {
 
     expect($claim->status)->toBe('Reserved, not yet settled');
 });
+
+test('approved claim with zero payments shows outstanding status', function () {
+    $claim = Claim::factory()->create([
+        'reserve_currency' => 'USD',
+        'approved_amount' => 50000,
+    ]);
+
+    expect($claim->total_paid)->toBe('0');
+    expect($claim->outstanding_balance)->toBe('50000');
+    expect($claim->status)->toBe('Settled, payment outstanding');
+});
+
+test('overpayment produces settled and paid status with zero balance', function () {
+    $claim = Claim::factory()->create([
+        'reserve_currency' => 'USD',
+        'approved_amount' => 10000,
+    ]);
+
+    Payment::factory()->create([
+        'claim_id' => $claim->id,
+        'amount' => 25000,
+        'currency' => 'USD',
+        'fx_rate_snapshot' => '1.000000',
+    ]);
+
+    expect($claim->outstanding_balance)->toBe('0');
+    expect($claim->status)->toBe('Settled and paid');
+});

@@ -18,6 +18,9 @@
                 </flux:sidebar.group>
 
                 <flux:sidebar.group :heading="__('Claims')" class="grid">
+                    <flux:sidebar.item icon="list-bullet" :href="route('claims.index')" :current="request()->routeIs('claims.index')" wire:navigate>
+                        {{ __('All claims') }}
+                    </flux:sidebar.item>
                     <flux:sidebar.item icon="document-text" :href="route('claims.register')" :current="request()->routeIs('claims.register')" wire:navigate>
                         {{ __('Register claim') }}
                     </flux:sidebar.item>
@@ -25,16 +28,6 @@
             </flux:sidebar.nav>
 
             <flux:spacer />
-
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
@@ -66,14 +59,6 @@
                                 </div>
                             </div>
                         </div>
-                    </flux:menu.radio.group>
-
-                    <flux:menu.separator />
-
-                    <flux:menu.radio.group>
-                        <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
-                            {{ __('Settings') }}
-                        </flux:menu.item>
                     </flux:menu.radio.group>
 
                     <flux:menu.separator />
