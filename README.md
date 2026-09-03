@@ -62,6 +62,38 @@ vendor/bin/pint --dirty --format agent
 | `/claims/register` | `claims.register` | New claim form |
 | `/claims/{id}` | `claims.show` | Claim detail + record payment |
 
+## Database schema
+
+```
+┌──────────────────────────────┐       ┌──────────────────────────────────┐
+│          claims              │       │            payments              │
+├──────────────────────────────┤       ├──────────────────────────────────┤
+│ id              UUID (PK)    │       │ id              UUID (PK)        │
+│ policy_number   VARCHAR UK   │       │ claim_id        UUID (FK) ───────┐
+│ insured_name    VARCHAR      │       │ payment_date    DATE             │
+│ loss_date       DATE         │       │ amount          BIGINT (cents)   │
+│ date_notified   DATE         │       │ currency        VARCHAR(3)       │
+│ loss_nature     VARCHAR      │       │ fx_rate_snapshot DECIMAL(12,6)   │
+│ reserve_currency VARCHAR(3)  │       │ created_at      TIMESTAMP        │
+│ estimated_loss_amount BIGINT │       │ updated_at      TIMESTAMP        │
+│ approved_amount BIGINT NULL  │       └──────────────────────────────────┘
+│ created_at      TIMESTAMP    │                     │
+│ updated_at      TIMESTAMP    │                     │
+└──────────────────────────────┘                     │
+                                                     │
+                          ┌──────────────────────────┘
+                          │
+                          ▼  ON DELETE CASCADE
+                    claim_id → claims.id
+```
+
+**Key tables:**
+
+- **claims** — Core entity. Stores policy details, loss info, reserve currency, and amounts in integer minor units (cents). `status` is computed at read time from `approved_amount`, payment totals, and outstanding balance.
+- **payments** — Individual payments against a claim. Each row snapshots the FX rate at time of recording. `amount` is in the payment's own currency (minor units).
+- **users** — Standard Laravel auth table (Fortify). A single `reviewer@example.com` seed user exists.
+- **passkeys** — WebAuthn/passkey credentials linked to users.
+
 ## Design decisions
 
 **Status is computed, not stored.** The claim status is derived on every read from `approved_amount`, payment totals, and outstanding balance. This avoids stale status if payments are added or amounts change. The three statuses are: "Reserved, not yet settled" (no approved amount), "Settled, payment outstanding" (approved but balance > 0), and "Settled and paid" (balance <= 0).

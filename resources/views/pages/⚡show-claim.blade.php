@@ -19,7 +19,7 @@ new #[Title('Claim detail')] class extends Component {
     public ?string $new_payment_amount = null;
     public string $new_payment_currency = 'USD';
 
-    public array $currencies = ['USD', 'GBP', 'EUR'];
+    public array $currencies = ['USD', 'GBP', 'EUR', 'GHS'];
 
     public function mount(string $claim): void
     {
@@ -46,7 +46,7 @@ new #[Title('Claim detail')] class extends Component {
         return [
             'new_payment_date' => ['required', 'date', 'before_or_equal:today'],
             'new_payment_amount' => ['required', 'numeric', 'min:0.01'],
-            'new_payment_currency' => ['required', 'in:USD,GBP,EUR'],
+            'new_payment_currency' => ['required', 'in:USD,GBP,EUR,GHS'],
         ];
     }
 
@@ -173,6 +173,11 @@ new #[Title('Claim detail')] class extends Component {
                     </flux:badge>
                 </p>
             </div>
+
+            <div>
+                <flux:text variant="subtle">{{ __('Created') }}</flux:text>
+                <p class="mt-1 font-medium">{{ $this->claimModel->created_at->format('d M Y') }}</p>
+            </div>
         </div>
     </div>
 
@@ -196,6 +201,7 @@ new #[Title('Claim detail')] class extends Component {
                             <th class="px-4 py-3 text-right font-medium">{{ __('Amount') }}</th>
                             <th class="hidden px-4 py-3 text-center font-medium sm:table-cell">{{ __('Currency') }}</th>
                             <th class="px-4 py-3 text-right font-medium">{{ __('Converted') }}</th>
+                            <th class="hidden px-4 py-3 text-left font-medium sm:table-cell">{{ __('Created') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -205,6 +211,7 @@ new #[Title('Claim detail')] class extends Component {
                                 <td class="px-4 py-3 text-right font-mono">{{ number_format($payment->amount / 100, 2) }}</td>
                                 <td class="hidden px-4 py-3 text-center sm:table-cell">{{ $payment->currency }}</td>
                                 <td class="px-4 py-3 text-right font-mono">{{ number_format($payment->converted_amount / 100, 2) }} {{ $this->claimModel->reserve_currency }}</td>
+                                <td class="hidden px-4 py-3 text-left text-zinc-500 sm:table-cell">{{ $payment->created_at->format('d M Y') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

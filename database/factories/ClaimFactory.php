@@ -19,7 +19,7 @@ class ClaimFactory extends Factory
     {
         $lossDate = fake()->dateTimeBetween('-2 years', 'now');
         $dateNotified = fake()->dateTimeBetween($lossDate, 'now');
-        $currency = fake()->randomElement(['USD', 'GBP', 'EUR']);
+        $currency = fake()->randomElement(['USD', 'GBP', 'EUR', 'GHS']);
         $estimatedLoss = fake()->numberBetween(10000, 5000000);
 
         return [

@@ -192,6 +192,7 @@ new #[Title('All claims')] class extends Component {
                 <flux:select.option value="USD">USD</flux:select.option>
                 <flux:select.option value="GBP">GBP</flux:select.option>
                 <flux:select.option value="EUR">EUR</flux:select.option>
+                <flux:select.option value="GHS">GHS</flux:select.option>
             </flux:select>
 
             <flux:select wire:model.live="dateField" :label="__('Date field')">
@@ -252,6 +253,7 @@ new #[Title('All claims')] class extends Component {
                             <th class="hidden px-4 py-3 text-right font-medium md:table-cell">{{ __('Paid') }}</th>
                             <th class="hidden px-4 py-3 text-right font-medium md:table-cell">{{ __('Balance') }}</th>
                             <th class="hidden px-4 py-3 text-center font-medium sm:table-cell">{{ __('Currency') }}</th>
+                            <th class="hidden px-4 py-3 text-left font-medium lg:table-cell">{{ __('Created') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -287,6 +289,7 @@ new #[Title('All claims')] class extends Component {
                                     @endif
                                 </td>
                                 <td class="hidden px-4 py-3 text-center sm:table-cell">{{ $claim->reserve_currency }}</td>
+                                <td class="hidden px-4 py-3 text-left text-zinc-500 lg:table-cell">{{ $claim->created_at->format('d M Y') }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -304,7 +307,7 @@ new #[Title('All claims')] class extends Component {
                                     <td class="hidden px-4 py-3 text-right font-mono md:table-cell">
                                         {{ number_format($total['paid'] / 100, 2) }}
                                     </td>
-                                    <td colspan="2"></td>
+                                    <td colspan="3"></td>
                                 </tr>
                             @endforeach
                         </tfoot>
