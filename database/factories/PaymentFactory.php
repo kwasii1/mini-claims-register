@@ -22,7 +22,7 @@ class PaymentFactory extends Factory
             'claim_id' => Claim::factory(),
             'payment_date' => fake()->dateTimeBetween('-1 year', 'now'),
             'amount' => fake()->numberBetween(1000, 500000),
-            'currency' => fake()->randomElement(['USD', 'GBP', 'EUR']),
+            'currency' => fake()->randomElement(['USD', 'GBP', 'EUR', 'GHS']),
             'fx_rate_snapshot' => fake()->randomFloat(6, 0.5, 2.0),
         ];
     }

@@ -142,6 +142,7 @@ new #[Title('Dashboard')] class extends Component {
                             <th class="px-4 py-3 text-left font-medium">{{ __('Status') }}</th>
                             <th class="hidden px-4 py-3 text-right font-medium sm:table-cell">{{ __('Estimated loss') }}</th>
                             <th class="hidden px-4 py-3 text-center font-medium sm:table-cell">{{ __('Currency') }}</th>
+                            <th class="hidden px-4 py-3 text-left font-medium lg:table-cell">{{ __('Created') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -163,6 +164,7 @@ new #[Title('Dashboard')] class extends Component {
                                     {{ number_format($claim->estimated_loss_amount / 100, 2) }}
                                 </td>
                                 <td class="hidden px-4 py-3 text-center sm:table-cell">{{ $claim->reserve_currency }}</td>
+                                <td class="hidden px-4 py-3 text-left text-zinc-500 lg:table-cell">{{ $claim->created_at->format('d M Y') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

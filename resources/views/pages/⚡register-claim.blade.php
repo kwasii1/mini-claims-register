@@ -14,7 +14,7 @@ new #[Title('Register claim')] class extends Component {
     public string $reserve_currency = 'USD';
     public ?string $estimated_loss_amount = null;
 
-    public array $currencies = ['USD', 'GBP', 'EUR'];
+    public array $currencies = ['USD', 'GBP', 'EUR', 'GHS'];
 
     public function rules(): array
     {
@@ -24,7 +24,7 @@ new #[Title('Register claim')] class extends Component {
             'loss_date' => ['required', 'date', 'before_or_equal:today'],
             'date_notified' => ['required', 'date', 'after_or_equal:loss_date'],
             'loss_nature' => ['required', 'string', 'max:255'],
-            'reserve_currency' => ['required', 'in:USD,GBP,EUR'],
+            'reserve_currency' => ['required', 'in:USD,GBP,EUR,GHS'],
             'estimated_loss_amount' => ['required', 'numeric', 'min:0.01'],
         ];
     }
